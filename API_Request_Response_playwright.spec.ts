@@ -9,7 +9,7 @@ test ('testPOST&GET', async({request}) => {
   
   const getreq = await getFunction(request, `${weburl}/${postId}`);
   const getjson = await getreq.json();
-
+  const a = await getreq.body();
   expect(getreq.status()).toBe(200);
   expect(getjson.id).toBe(`${postId}`);
   expect(getjson.title).toBe('Buy groceries');
