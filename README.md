@@ -1,3 +1,1 @@
-# Git Practice
-
-This is my first GitHub repository.
+# My Project
