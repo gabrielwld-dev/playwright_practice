@@ -3,6 +3,8 @@ import { request } from "node:http";
 
 let url = 'https://694e82ddb5bc648a93c09423.mockapi.io/api/v1/posts';
 let postID: string;
+let title = 'My First Post';
+let body = 'This is the content of my first post.';
 /*
 Requirement
 1. Create a Post
@@ -19,7 +21,7 @@ Response body contains id, title, body.
 title and body match what you sent.*/
 
 test ('Testcase1: Create a Post', async({request}) => {
-  const postReturn = await postFunction(request, url, 'My First Post', 'This is the content of my first post.');
+  const postReturn = await postFunction(request, url, title, body);
   expect(postReturn.status()).toBe(201);
   const jsonpostReturn = await postReturn.json();
   postID = jsonpostReturn.id;
@@ -85,6 +87,21 @@ Example: Update the body
 }
 */
 
+test('Testcase 3: Update a Post', async({request}) => {
+  const updatedBody = 'This is the updated content';
+  const putReturn = await putFunction(request, `${url}/${postID}`, title, updatedBody);
+  const jsonputReturn = await putReturn.json();
+  expect(jsonputReturn.body).toBe(updatedBody);
+  expect(jsonputReturn.title).toBe(title);
+});
+
+async function putFunction(request: APIRequestContext, web: string, title: string, body: string) {
+  const putResponse = await request.put(web, {
+    data: {title, body},
+  });
+  return putResponse;
+}
+
 /*
 Requirement
 Delete a Post
@@ -98,6 +115,19 @@ Status 200 or 204.
 GET /posts/:id returns 404 (post no longer exists).
 */
 
+test('Testcase 4: Delete a post', async({request}) => {
+  const delReturn = await deleteFunction(request, `${url}/${5}`);
+  expect(delReturn.status()).toBe(200);
+
+  const getReturn = await getFunction(request, `${url}/${5}`);
+  expect(getReturn.status()).toBe(404);
+});
+
+async function deleteFunction(request: APIRequestContext, web: string) {
+  const deleteResponse = await request.delete(web);
+  return deleteResponse;
+}
+
 /*
 Requirement
 Edge Cases
@@ -106,3 +136,11 @@ Update a post that doesn’t exist → Assert 404.
 
 Delete a post that doesn’t exist → Assert 404.
 */
+
+test('Testcase 5: Edge Cases', async({request}) => {
+  const updateputReturn = await putFunction(request, `${url}/${1}`, title, body);
+  expect(updateputReturn.status()).toBe(404);
+
+  const deletedelReturn = await deleteFunction(request, `${url}/${2}`);
+  expect(deletedelReturn.status()).toBe(404);
+});
