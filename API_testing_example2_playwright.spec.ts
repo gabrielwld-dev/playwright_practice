@@ -14,6 +14,14 @@ Verify that id is a number.
 Verify that title is not empty.
 Verify that body is not empty.*/
 
+/* Conditional Logic
+
+If a post’s title length is less than a defined minimum (for example, 5 characters):
+Log a warning or mark it as invalid.
+
+If a post’s body contains a specific keyword:
+Perform an additional assertion (for example, check response headers or content type).*/
+
 test('GET Request Validation', async({request}) => {
   const getRequest = await request.get(url);
   const listofPosts = await getRequest.json();
@@ -57,14 +65,6 @@ test('GET Request Validation', async({request}) => {
   }
 });
 
-/* Conditional Logic
-
-If a post’s title length is less than a defined minimum (for example, 5 characters):
-Log a warning or mark it as invalid.
-
-If a post’s body contains a specific keyword:
-Perform an additional assertion (for example, check response headers or content type).*/
-
 /*POST Request Validation
 
 Send a request to create a new post using title and body.
@@ -85,10 +85,60 @@ Assert that an error message exists in the response.
 
 If the API returns success:
 
-Assert that all required fields are present.
+Assert that all required fields are present.*/
 
-Negative Scenario
+test('POST request validation', async({request}) => {
+  const postRequest = await request.post(url, {
+    data: {
+      title: 'Generate a post',
+      body: 'Post is generated'
+    }
+  });
+  expect(postRequest.status()).toBe(201);
+  const postRequestjson = await postRequest.json();
+  const postId = postRequestjson.id;
+  if(postRequest.ok())
+  {
+    console.log(`The post was created`);
+    expect(postRequestjson).toHaveProperty('id');
+    expect(postRequestjson).toHaveProperty('title');
+    expect(postRequestjson).toHaveProperty('body');
+  }
+  else
+  {
+    console.log(`The post was not created`);
+    expect(postRequestjson).toHaveProperty('error');
+  }
+
+  const getpostRequest = await request.get(`${url}/${postId}`);
+  const jsongetpostRequest = await getpostRequest.json();
+  expect(jsongetpostRequest.title).toBe('Generate a post');
+  expect(jsongetpostRequest.id).toBe(postId);
+});
+
+
+/*Negative Scenario
 
 Attempt to create a post with an empty title or body.
 
 Validate that the API responds with the appropriate error behavior.*/
+
+test('Conditional response handling', async({request}) => {
+  const postRequest = await request.post(url, {data:
+    {
+      title: '',
+      body: 'Post is generated'
+    }
+  });
+  const jsonpostRequest = await postRequest.json();
+  if(jsonpostRequest.title != '')
+  {
+    console.log(`The title is not empty`);
+    expect(jsonpostRequest.title).not.toBe('');
+  }
+  else
+  {
+    console.log(`The title is empty`);
+    expect(jsonpostRequest.title).not.toBe('');
+  }
+});
